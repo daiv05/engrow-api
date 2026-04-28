@@ -1,3 +1,5 @@
+import json
+
 from sqlalchemy import String, Text, Integer, ForeignKey, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -42,3 +44,14 @@ class Resource(Base):
     user: Mapped["User"] = relationship("User", back_populates="resources")
     plan: Mapped["Plan"] = relationship("Plan", back_populates="resources")
     category: Mapped["ResourceCategory"] = relationship("ResourceCategory", back_populates="resources")
+
+    @property
+    def tags(self) -> list[str]:
+        try:
+            return json.loads(self.tags_json or "[]")
+        except Exception:
+            return []
+
+    @tags.setter
+    def tags(self, value: list[str] | None) -> None:
+        self.tags_json = json.dumps(value or [])
