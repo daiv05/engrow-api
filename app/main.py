@@ -9,9 +9,9 @@ from app.config import settings
 from app.core.admin import create_admin
 from app.core.rate_limit import limiter
 from app.core.scheduler import start_scheduler, stop_scheduler
-from app.core.seed import seed_superadmin
+from app.core.seed import seed_activity_tips, seed_default_resources, seed_superadmin
 from app.database import engine, SessionLocal
-from app.routers import auth, blocks, plans, resources, reviews, sync, users, writing
+from app.routers import auth, blocks, plans, resources, reviews, superadmin, sync, users, writing
 
 
 @asynccontextmanager
@@ -19,6 +19,8 @@ async def lifespan(app: FastAPI):
     db = SessionLocal()
     try:
         seed_superadmin(db)
+        seed_default_resources(db)
+        seed_activity_tips(db)
     finally:
         db.close()
     start_scheduler()
@@ -58,6 +60,7 @@ app.include_router(writing.router)  # noqa: F401
 app.include_router(resources.router)
 app.include_router(reviews.router)
 app.include_router(sync.router)
+app.include_router(superadmin.router)
 
 
 @app.get("/health")

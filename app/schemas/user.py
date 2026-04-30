@@ -8,6 +8,7 @@ class UserProfile(BaseModel):
     display_name: str
     avatar_data: str | None
     created_at: datetime
+    is_superadmin: bool
 
     model_config = {"from_attributes": True}
 
