@@ -8,9 +8,7 @@ python scripts/generate_vapid_keys.py   # writes vapid_private_key.pem, needed b
 docker compose up -d --build
 ```
 
-This runs the API + a Postgres 16 container. `docker-compose.yml` overrides `DATABASE_URL` to point at the `db` service — the value in `.env` is only used for local/non-Docker runs. Migrations (`alembic upgrade head`) run automatically as part of the container's start command, every time it starts.
-
-For a managed Postgres instance instead of the bundled `db` service, drop the `db` service from `docker-compose.yml` and set `DATABASE_URL` directly in `.env` (the compose file's `environment:` override only applies to the bundled `db` host — remove it too).
+The database is always SQLite (this project deliberately does not use Postgres), persisted on a named volume mounted at `/app/data` — `docker-compose.yml` overrides `DATABASE_URL` to point there, so the value in `.env` is only used for non-Docker runs. Migrations (`alembic upgrade head`) run automatically as part of the container's start command, every time it starts. Back up the `db_data` volume like any other file — `docker run --rm -v engrow-api_db_data:/data -v $(pwd):/backup alpine cp /data/engrow.db /backup/`.
 
 ## Without Docker
 
@@ -25,7 +23,7 @@ alembic upgrade head
 
 Set real values for every variable in `.env.example`, in particular:
 
-- `DATABASE_URL` — point at Postgres in production, not SQLite (SQLite is fine for dev/single-instance, but has no concurrent-write story and `BACKUP_DIR`/`backup_sqlite` scheduler job assumes a local file).
+- `DATABASE_URL` — SQLite, same as dev. Under Docker this is overridden by `docker-compose.yml` to point at the mounted volume; outside Docker, point it at a file path that's actually backed up (`BACKUP_DIR`/`backup_sqlite`'s scheduled job only protects whatever file this points to).
 - `SECRET_KEY` / `ADMIN_SECRET_KEY` — real random secrets, not the defaults.
 - `FRONTEND_ORIGIN` — the real deployed frontend URL (exact scheme + host, no trailing slash). CORS will silently reject every request from any other origin.
 - `SUPERADMIN_EMAIL` / `SUPERADMIN_PASSWORD` — change from the placeholder before the first deploy; this account is auto-created on startup.

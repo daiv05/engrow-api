@@ -8,7 +8,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 RUN useradd --create-home --uid 1000 appuser \
-    && mkdir -p /app/backups \
+    && mkdir -p /app/backups /app/data \
     && chown -R appuser:appuser /app
 USER appuser
 

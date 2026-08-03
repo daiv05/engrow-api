@@ -8,32 +8,16 @@ services:
     env_file:
       - .env
     environment:
-      # Overrides whatever DATABASE_URL is in .env — inside this compose network the
-      # Postgres host is the "db" service name, never localhost.
-      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-engrow}:${POSTGRES_PASSWORD:-change-me}@db:5432/${POSTGRES_DB:-engrow}
+      # Overrides whatever DATABASE_URL is in .env — inside the container the
+      # SQLite file must live on the mounted volume below, not the ephemeral image layer.
+      DATABASE_URL: sqlite:////app/data/engrow.db
     volumes:
+      # SQLite database file — persisted on the host, survives container recreation.
+      - db_data:/app/data
       # Must exist on the host before `docker compose up` — generate with
       # scripts/generate_vapid_keys.py. A missing file becomes an empty directory here.
       - ./vapid_private_key.pem:/app/vapid_private_key.pem:ro
       - backups:/app/backups
-    depends_on:
-      db:
-        condition: service_healthy
-
-  db:
-    image: postgres:16-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-engrow}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
-      POSTGRES_DB: ${POSTGRES_DB:-engrow}
-    volumes:
-      - db_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-engrow}"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
 
 volumes:
   db_data:
