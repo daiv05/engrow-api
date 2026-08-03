@@ -39,6 +39,8 @@ packaging==26.2
 passlib==1.7.4
 pluggy==1.6.0
 propcache==0.5.2
+psycopg==3.3.4
+psycopg-binary==3.3.4
 py-vapid==1.9.4
 pyasn1==0.6.4
 pyasn1_modules==0.4.2

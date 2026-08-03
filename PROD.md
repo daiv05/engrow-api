@@ -1,6 +1,18 @@
 # Running Engrow API in production
 
-## Build
+## Docker (recommended)
+
+```bash
+cp .env.example .env       # fill in real secrets — see "Environment" below
+python scripts/generate_vapid_keys.py   # writes vapid_private_key.pem, needed before `up`
+docker compose up -d --build
+```
+
+This runs the API + a Postgres 16 container. `docker-compose.yml` overrides `DATABASE_URL` to point at the `db` service — the value in `.env` is only used for local/non-Docker runs. Migrations (`alembic upgrade head`) run automatically as part of the container's start command, every time it starts.
+
+For a managed Postgres instance instead of the bundled `db` service, drop the `db` service from `docker-compose.yml` and set `DATABASE_URL` directly in `.env` (the compose file's `environment:` override only applies to the bundled `db` host — remove it too).
+
+## Without Docker
 
 There's no build step — it's a standard ASGI app. Install dependencies and run migrations against the production database:
 

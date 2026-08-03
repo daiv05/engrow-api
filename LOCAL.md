@@ -36,6 +36,5 @@ pytest
 ## Common pitfalls
 
 - **CORS errors in the browser console** almost always mean `FRONTEND_ORIGIN` in `.env` doesn't exactly match the origin the frontend is actually running on (Vite auto-shifts to the next free port if 3000 is taken — check the terminal for the real port and update `.env` to match, then restart uvicorn).
-- **`(trapped) error reading bcrypt version`** on startup is a harmless `passlib`/`bcrypt` version-detection warning. It doesn't affect password hashing and can be ignored.
 - **Adding a new SQLAlchemy model?** Register it in `app/models/__init__.py`. If you don't, `alembic revision --autogenerate` won't know the table should exist and will generate a migration that *drops* it on the next run against a database that already has it — this has bitten this project before.
 - SQLite can't `ALTER COLUMN` directly. If autogenerate produces a migration with `op.alter_column(...)` on an existing SQLite table, wrap the affected operations in `with op.batch_alter_table(...) as batch_op:` (see any recent migration in `alembic/versions/` for the pattern) or it will fail with `near "ALTER": syntax error`.
