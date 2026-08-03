@@ -5,6 +5,7 @@ from app.models.writing import WritingEntry
 from app.models.resource import ResourceCategory, Resource
 from app.models.review import MonthlyReview
 from app.models.default_resource import DefaultResource
+from app.models.activity_tip import ActivityTip
 
 __all__ = [
     "User",
@@ -15,4 +16,5 @@ __all__ = [
     "Resource",
     "MonthlyReview",
     "DefaultResource",
+    "ActivityTip",
 ]
