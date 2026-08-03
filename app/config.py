@@ -26,5 +26,11 @@ class Settings(BaseSettings):
     superadmin_password: str = "change-me-now"
     admin_secret_key: str = "admin-secret-change-me"
 
+    google_client_id: str = ""
+
+    vapid_private_key_path: str = "./vapid_private_key.pem"
+    vapid_public_key: str = ""
+    vapid_admin_email: str = "admin@engrow.app"
+
 
 settings = Settings()

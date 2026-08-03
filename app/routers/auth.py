@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from google.auth.transport import requests as google_requests
+from google.oauth2 import id_token as google_id_token
 from jose import JWTError
 from sqlalchemy.orm import Session
 
@@ -20,6 +22,7 @@ from app.models.user import User
 from app.schemas.auth import (
     AccessTokenResponse,
     ForgotPasswordRequest,
+    GoogleAuthRequest,
     LoginRequest,
     RefreshRequest,
     RegisterRequest,
@@ -63,7 +66,7 @@ def register(request: Request, body: RegisterRequest, db: Session = Depends(get_
 @limiter.limit("5/minute")
 def login(request: Request, body: LoginRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == body.email).first()
-    if not user or not verify_password(body.password, user.password_hash):
+    if not user or user.password_hash is None or not verify_password(body.password, user.password_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     if not user.is_active:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account disabled")
@@ -113,3 +116,32 @@ def reset_password(body: ResetPasswordRequest, db: Session = Depends(get_db)):
     user.password_changed_at = datetime.now(timezone.utc)
     db.commit()
     return {"detail": "Password updated successfully"}
+
+
+@router.post("/google", response_model=AuthUserResponse)
+@limiter.limit("10/minute")
+def google_login(request: Request, body: GoogleAuthRequest, db: Session = Depends(get_db)):
+    try:
+        payload = google_id_token.verify_oauth2_token(
+            body.id_token, google_requests.Request(), settings.google_client_id,
+        )
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Google token")
+
+    google_sub = payload["sub"]
+    email = payload.get("email")
+    name = payload.get("name") or "You"
+
+    user = db.query(User).filter(User.google_sub == google_sub).first()
+    if not user and email:
+        user = db.query(User).filter(User.email == email).first()
+        if user:
+            user.google_sub = google_sub
+
+    if not user:
+        user = User(email=email, password_hash=None, display_name=name, google_sub=google_sub)
+        db.add(user)
+
+    db.commit()
+    db.refresh(user)
+    return _auth_response(user)
