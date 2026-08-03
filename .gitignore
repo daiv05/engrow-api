@@ -58,6 +58,7 @@ celerybeat.pid
 # Environment files / secrets
 .env
 .env.*
+!.env.example
 .envrc
 local_settings.py
 
