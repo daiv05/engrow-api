@@ -6,6 +6,7 @@ from app.models.resource import ResourceCategory, Resource
 from app.models.review import MonthlyReview
 from app.models.default_resource import DefaultResource
 from app.models.activity_tip import ActivityTip
+from app.models.push_subscription import PushSubscription
 
 __all__ = [
     "User",
@@ -17,4 +18,5 @@ __all__ = [
     "MonthlyReview",
     "DefaultResource",
     "ActivityTip",
+    "PushSubscription",
 ]

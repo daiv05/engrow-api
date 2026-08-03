@@ -25,3 +25,6 @@ class User(Base):
     resource_categories: Mapped[list["ResourceCategory"]] = relationship("ResourceCategory", back_populates="user", cascade="all, delete-orphan")
     resources: Mapped[list["Resource"]] = relationship("Resource", back_populates="user", cascade="all, delete-orphan")
     monthly_reviews: Mapped[list["MonthlyReview"]] = relationship("MonthlyReview", back_populates="user", cascade="all, delete-orphan")
+    push_subscriptions: Mapped[list["PushSubscription"]] = relationship(
+        "PushSubscription", back_populates="user", cascade="all, delete-orphan",
+    )
