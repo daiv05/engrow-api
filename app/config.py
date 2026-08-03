@@ -26,5 +26,7 @@ class Settings(BaseSettings):
     superadmin_password: str = "change-me-now"
     admin_secret_key: str = "admin-secret-change-me"
 
+    google_client_id: str = ""
+
 
 settings = Settings()
